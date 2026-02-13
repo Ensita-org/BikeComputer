@@ -5,7 +5,9 @@ import Foundation
 struct PauseActivityIntent: LiveActivityIntent {
     static var title: LocalizedStringResource = "Pause Activity"
     
-    public init() {}
+    public init() {
+        // Required by LiveActivityIntent
+    }
     
     public func perform() async throws -> some IntentResult {
         // notification center or singleton to handle this?
@@ -20,7 +22,9 @@ struct PauseActivityIntent: LiveActivityIntent {
 struct ResumeActivityIntent: LiveActivityIntent {
     static var title: LocalizedStringResource = "Resume Activity"
     
-    public init() {}
+    public init() {
+        // Required by LiveActivityIntent
+    }
     
     public func perform() async throws -> some IntentResult {
         NotificationCenter.default.post(name: Notification.Name("resumeActivity"), object: nil)
@@ -32,7 +36,9 @@ struct ResumeActivityIntent: LiveActivityIntent {
 struct StopActivityIntent: LiveActivityIntent {
     static var title: LocalizedStringResource = "Stop Activity"
     
-    public init() {}
+    public init() {
+        // Required by LiveActivityIntent
+    }
     
     public func perform() async throws -> some IntentResult {
         NotificationCenter.default.post(name: Notification.Name("stopActivity"), object: nil)
