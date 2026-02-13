@@ -17,11 +17,19 @@ struct BikeComputerApp: App {
     }()
 
     @AppStorage("displayMode") private var displayMode: Int = 0
+
+    private var selectedColorScheme: ColorScheme? {
+        switch displayMode {
+        case 1: return .light
+        case 2: return .dark
+        default: return nil
+        }
+    }
     
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .preferredColorScheme(displayMode == 1 ? .light : displayMode == 2 ? .dark : nil)
+                .preferredColorScheme(selectedColorScheme)
         }
         .modelContainer(sharedModelContainer)
     }

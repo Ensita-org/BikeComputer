@@ -96,11 +96,9 @@ class ActivityManager: ObservableObject {
         // Allow screen to sleep
         UIApplication.shared.isIdleTimerDisabled = false
         
-        if isPaused {
+        if isPaused, let pauseStart = pauseStartTime {
              // If stopped while paused, update final duration
-             if let pauseStart = pauseStartTime {
-                 totalPausedDuration += Date().timeIntervalSince(pauseStart)
-             }
+             totalPausedDuration += Date().timeIntervalSince(pauseStart)
          }
         
         isPaused = false
