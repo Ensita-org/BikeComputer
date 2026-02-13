@@ -63,3 +63,4 @@ Carthage/Build
 .idea/
 *.swp
 *.swo
+.vscode/
