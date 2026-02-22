@@ -45,21 +45,21 @@ func createTintedIcon() {
     
     for y in 0..<height {
         for x in 0..<width {
-            var red: CGFloat = 0
             // Get pixel color (normalized 0-1)
             // Note: getPixel returns components in reference to color space, but simpler is to use colorAt
             if let color = bitmapRep.colorAt(x: x, y: y) {
-                 // Use the maximum of RGB as the alpha, or specifically Red if it's red-on-black.
-                 // Since the icon is "Neon Red", Red component is high, others are low.
-                 // Let's use the Red component as the Alpha for the new white icon.
-                 // This preserves antialiasing.
-                 red = color.redComponent
+                 // Get the Red component as the base for Alpha.
+                 // We need to subtract the background Red component (~0.117) 
+                 // to make the background transparent in the tinted version.
+                 let sourceRed = color.redComponent
                  
-                 // If the background is not perfectly black, we might want to threshold?
-                 // But "matte black" usually means (0,0,0) or close.
-                 // Let's assume standard behavior: R -> A.
+                 var alpha: CGFloat = 0
+                 if sourceRed > 0.15 {
+                     // Scale the remaining range to 0-1 for the glyph
+                     alpha = (sourceRed - 0.117) / (1.0 - 0.117)
+                     alpha = max(0, min(1.0, alpha))
+                 }
                  
-                 let alpha = red
                  let newColor = NSColor(deviceRed: 1.0, green: 1.0, blue: 1.0, alpha: alpha)
                  outputRep.setColor(newColor, atX: x, y: y)
             }

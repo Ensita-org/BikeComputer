@@ -64,3 +64,6 @@ Carthage/Build
 *.swp
 *.swo
 .vscode/
+
+# gemini
+.gemini
