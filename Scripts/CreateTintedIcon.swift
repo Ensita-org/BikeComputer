@@ -39,27 +39,20 @@ func createTintedIcon() {
         exit(1)
     }
 
-    // Process pixels
-    // We assume the source is Black background with Red foreground.
-    // We want conversion: Alpha = Source.Red, Color = White.
-    
+    // Source is a dark-green background with a bright-green bicycle glyph.
+    // Alpha is driven by the green channel minus the background's green level.
+    let backgroundGreen: CGFloat = 0.18
     for y in 0..<height {
         for x in 0..<width {
-            // Get pixel color (normalized 0-1)
-            // Note: getPixel returns components in reference to color space, but simpler is to use colorAt
             if let color = bitmapRep.colorAt(x: x, y: y) {
-                 // Get the Red component as the base for Alpha.
-                 // We need to subtract the background Red component (~0.117) 
-                 // to make the background transparent in the tinted version.
-                 let sourceRed = color.redComponent
-                 
+                 let sourceGreen = color.greenComponent
+
                  var alpha: CGFloat = 0
-                 if sourceRed > 0.15 {
-                     // Scale the remaining range to 0-1 for the glyph
-                     alpha = (sourceRed - 0.117) / (1.0 - 0.117)
+                 if sourceGreen > backgroundGreen + 0.03 {
+                     alpha = (sourceGreen - backgroundGreen) / (1.0 - backgroundGreen)
                      alpha = max(0, min(1.0, alpha))
                  }
-                 
+
                  let newColor = NSColor(deviceRed: 1.0, green: 1.0, blue: 1.0, alpha: alpha)
                  outputRep.setColor(newColor, atX: x, y: y)
             }

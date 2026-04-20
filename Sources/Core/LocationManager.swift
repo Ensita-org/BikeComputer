@@ -35,6 +35,10 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         authorizationStatus = manager.authorizationStatus
+        let authorized = authorizationStatus == .authorizedWhenInUse || authorizationStatus == .authorizedAlways
+        if authorized && location == nil {
+            manager.requestLocation()
+        }
     }
     
     func locationManager(_ _: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
