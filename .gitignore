@@ -71,5 +71,15 @@ Carthage/Build
 README.md
 Instructions.md
 
-# claude 
+# claude
 .claude/
+
+# Secrets / credentials (defensive)
+*.mobileprovision
+*.p12
+*.p8
+*.cer
+*.pem
+.env
+.env.*
+AuthKey_*.p8
