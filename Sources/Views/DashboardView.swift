@@ -25,7 +25,9 @@ struct DashboardView: View {
                 HStack {
                     Image(systemName: weather.iconName)
                         .font(.title)
-                    Text("\(Int(weather.temperature))°C")
+                    Text(useMetricUnits
+                        ? "\(Int(weather.temperature))°C"
+                        : "\(Int(weather.temperature * 9 / 5 + 32))°F")
                         .font(.title2)
                     Text(weather.condition)
                         .foregroundColor(.secondary)
@@ -51,7 +53,33 @@ struct DashboardView: View {
                         }
                     }
             }
-            
+
+            // Elevation
+            HStack(alignment: .center) {
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "arrow.up.right")
+                        Text(formatElevation(activityManager.ascent))
+                    }
+                    .font(.title3)
+                    Text("Ascent")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+                VStack(alignment: .trailing, spacing: 2) {
+                    HStack(spacing: 4) {
+                        Text(formatElevation(activityManager.descent))
+                        Image(systemName: "arrow.down.right")
+                    }
+                    .font(.title3)
+                    Text("Descent")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+            .padding(.horizontal)
+
             Spacer()
             
             // Speed
@@ -61,7 +89,8 @@ struct DashboardView: View {
                     .foregroundColor(.secondary)
                 VStack(spacing: -20) {
                     Text(String(format: "%.1f", useMetricUnits ? (activityManager.currentSpeed * 3.6) : (activityManager.currentSpeed * 2.23693629)))
-                        .font(.system(size: 160, weight: .bold, design: useMonospacedFont ? .monospaced : .rounded))
+                        .font(.system(size: 180, weight: .bold, design: useMonospacedFont ? .monospaced : .rounded))
+                        .monospacedDigit()
                         .minimumScaleFactor(0.4)
                         .lineLimit(1)
                         .padding(.horizontal)
@@ -150,6 +179,15 @@ struct DashboardView: View {
         }
     }
     
+    private func formatElevation(_ meters: Double) -> String {
+        if useMetricUnits {
+            return "\(Int(meters.rounded())) m"
+        } else {
+            let feet = meters * 3.28084
+            return "\(Int(feet.rounded())) ft"
+        }
+    }
+
     private func formatDuration(_ duration: TimeInterval) -> String {
         let formatter = DateComponentsFormatter()
         formatter.allowedUnits = [.hour, .minute, .second]

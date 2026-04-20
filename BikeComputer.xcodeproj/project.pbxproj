@@ -411,6 +411,7 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Location is needed to calculate cyclint speed and distance.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Location is needed to calculate cycling speed and distance. ";
+				INFOPLIST_KEY_NSMotionUsageDescription = "Motion sensors are used to measure elevation gained and lost during your ride.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -448,6 +449,7 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Location is needed to calculate cyclint speed and distance.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Location is needed to calculate cycling speed and distance. ";
+				INFOPLIST_KEY_NSMotionUsageDescription = "Motion sensors are used to measure elevation gained and lost during your ride.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

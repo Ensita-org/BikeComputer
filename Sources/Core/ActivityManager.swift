@@ -12,18 +12,22 @@ class ActivityManager: ObservableObject {
     @Published var distance: Double = 0 // meters
     @Published var currentSpeed: Double = 0 // m/s
     @Published var averageSpeed: Double = 0 // m/s
-    
+    @Published var ascent: Double = 0 // meters
+    @Published var descent: Double = 0 // meters
+
     private var locationManager: LocationManager
+    private let altimeterManager = AltimeterManager()
     private var modelContext: ModelContext?
-    
+
     private var timer: Timer?
     private var startTime: Date?
     private var pauseStartTime: Date?
     private var totalPausedDuration: TimeInterval = 0
     private var lastLocation: CLLocation?
     private var routePoints: [RoutePoint] = []
-    
+
     private var locationsCancellable: AnyCancellable?
+    private var altimeterCancellables = Set<AnyCancellable>()
     private var liveActivity: ActivityKit.Activity<BikeActivityAttributes>?
     
     init(locationManager: LocationManager) {
@@ -67,16 +71,26 @@ class ActivityManager: ObservableObject {
         elapsedTime = 0
         distance = 0
         averageSpeed = 0
+        ascent = 0
+        descent = 0
         routePoints = []
         lastLocation = nil
-        
+
         // Prevent screen from sleeping if setting is enabled
         let preventLock = UserDefaults.standard.object(forKey: "preventScreenLock") as? Bool ?? true
         if preventLock {
             UIApplication.shared.isIdleTimerDisabled = true
         }
-        
+
         locationManager.startUpdates()
+        altimeterManager.start()
+        altimeterCancellables.removeAll()
+        altimeterManager.$ascent
+            .assign(to: \.ascent, on: self)
+            .store(in: &altimeterCancellables)
+        altimeterManager.$descent
+            .assign(to: \.descent, on: self)
+            .store(in: &altimeterCancellables)
         startLiveActivity()
         
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
@@ -92,7 +106,9 @@ class ActivityManager: ObservableObject {
         timer = nil
         
         locationManager.stopUpdates()
-        
+        altimeterManager.stop()
+        altimeterCancellables.removeAll()
+
         // Allow screen to sleep
         UIApplication.shared.isIdleTimerDisabled = false
         
@@ -237,6 +253,8 @@ class ActivityManager: ObservableObject {
             duration: elapsedTime
         )
         activity.averageSpeed = averageSpeed
+        activity.totalAscent = ascent
+        activity.totalDescent = descent
         
         // Save route data
         if let encodedRoute = try? JSONEncoder().encode(routePoints) {

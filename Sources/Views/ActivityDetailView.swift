@@ -3,7 +3,8 @@ import MapKit
 
 struct ActivityDetailView: View {
     let activity: Activity
-    
+    @AppStorage("useMetricUnits") private var useMetricUnits: Bool = true
+
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
@@ -36,9 +37,9 @@ struct ActivityDetailView: View {
                 // Stats
                 VStack(spacing: 15) {
                     DetailRow(title: "Date", value: activity.timestamp.formatted(date: .long, time: .shortened))
-                    DetailRow(title: "Distance", value: String(format: "%.2f km", activity.distance / 1000))
+                    DetailRow(title: "Distance", value: formatDistance(activity.distance))
                     DetailRow(title: "Duration", value: formatDuration(activity.duration))
-                    DetailRow(title: "Avg Speed", value: String(format: "%.1f km/h", activity.averageSpeed * 3.6))
+                    DetailRow(title: "Avg Speed", value: formatSpeed(activity.averageSpeed))
                 }
                 .padding()
                 .background(Color.gray.opacity(0.1))
@@ -67,6 +68,20 @@ struct ActivityDetailView: View {
         formatter.allowedUnits = [.hour, .minute, .second]
         formatter.unitsStyle = .full
         return formatter.string(from: duration) ?? "00:00"
+    }
+
+    private func formatDistance(_ meters: Double) -> String {
+        let km = meters / 1000
+        return useMetricUnits
+            ? String(format: "%.2f km", km)
+            : String(format: "%.2f mi", km * 0.621371)
+    }
+
+    private func formatSpeed(_ metersPerSecond: Double) -> String {
+        let kph = metersPerSecond * 3.6
+        return useMetricUnits
+            ? String(format: "%.1f km/h", kph)
+            : String(format: "%.1f mph", kph * 0.621371)
     }
     
     private func generateGPX() -> URL {

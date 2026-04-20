@@ -11,10 +11,14 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 Section(header: Text("Units")) {
-                    Toggle(isOn: $useMetricUnits) {
-                        Text("Use Metric Units")
+                    Picker("Units", selection: $useMetricUnits) {
+                        Text("Metric").tag(true)
+                        Text("Imperial").tag(false)
                     }
-                    Text(useMetricUnits ? "Speed in km/h, distance in km" : "Speed in mph, distance in miles")
+                    .pickerStyle(.segmented)
+                    Text(useMetricUnits
+                        ? "Speed in km/h, distance in km, temperature in °C"
+                        : "Speed in mph, distance in miles, temperature in °F")
                         .font(.footnote)
                         .foregroundColor(.secondary)
                 }
