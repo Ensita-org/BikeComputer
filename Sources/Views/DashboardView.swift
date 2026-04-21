@@ -10,6 +10,7 @@ struct DashboardView: View {
     
     @AppStorage("useMetricUnits") private var useMetricUnits: Bool = true
     @AppStorage("useMonospacedFont") private var useMonospacedFont: Bool = false
+    @AppStorage("showWeather") private var showWeather: Bool = true
     @State private var showingSettings = false
     
     init() {
@@ -19,51 +20,64 @@ struct DashboardView: View {
     }
     
     var body: some View {
+        let metricFont: Font = showWeather ? .title3 : .largeTitle
+        let metricLabelFont: Font = showWeather ? .caption : .subheadline
         VStack(spacing: 20) {
             // Weather Header
-            if let weather = weatherManager.currentWeather {
-                HStack {
-                    Image(systemName: weather.iconName)
-                        .font(.title)
-                    Text(useMetricUnits
-                        ? "\(Int(weather.temperature))°C"
-                        : "\(Int(weather.temperature * 9 / 5 + 32))°F")
-                        .font(.title2)
-                    Text(weather.condition)
-                        .foregroundColor(.secondary)
+            if showWeather {
+                if let weather = weatherManager.currentWeather {
+                    HStack {
+                        Image(systemName: weather.iconName)
+                            .font(.title)
+                        Text(useMetricUnits
+                            ? "\(Int(weather.temperature))°C"
+                            : "\(Int(weather.temperature * 9 / 5 + 32))°F")
+                            .font(.title2)
+                        Text(weather.condition)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding()
+                    .background(.thinMaterial)
+                    .cornerRadius(15)
+                } else {
+                    Text("Loading Weather...")
+                        .font(.caption)
+                        .onAppear {
+                            if let loc = locationManager.location {
+                                Task {
+                                    await weatherManager.fetchWeather(for: loc)
+                                }
+                            }
+                        }
+                        .onChange(of: locationManager.location) { oldValue, newValue in
+                            if let loc = newValue, weatherManager.currentWeather == nil {
+                                Task {
+                                    await weatherManager.fetchWeather(for: loc)
+                                }
+                            }
+                        }
                 }
-                .padding()
-                .background(.thinMaterial)
-                .cornerRadius(15)
-            } else {
-                Text("Loading Weather...")
-                    .font(.caption)
-                    .onAppear {
-                        if let loc = locationManager.location {
-                            Task {
-                                await weatherManager.fetchWeather(for: loc)
-                            }
-                        }
-                    }
-                    .onChange(of: locationManager.location) { oldValue, newValue in
-                        if let loc = newValue, weatherManager.currentWeather == nil {
-                            Task {
-                                await weatherManager.fetchWeather(for: loc)
-                            }
-                        }
-                    }
             }
 
-            // Elevation
+            // Elevation + pressure
             HStack(alignment: .center) {
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 4) {
                         Image(systemName: "arrow.up.right")
                         Text(formatElevation(activityManager.ascent))
                     }
-                    .font(.title3)
+                    .font(metricFont)
                     Text("Ascent")
-                        .font(.caption)
+                        .font(metricLabelFont)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+                VStack(alignment: .center, spacing: 2) {
+                    Text(formatPressure(activityManager.currentPressure))
+                        .font(metricFont)
+                        .monospacedDigit()
+                    Text("Pressure")
+                        .font(metricLabelFont)
                         .foregroundColor(.secondary)
                 }
                 Spacer()
@@ -72,9 +86,9 @@ struct DashboardView: View {
                         Text(formatElevation(activityManager.descent))
                         Image(systemName: "arrow.down.right")
                     }
-                    .font(.title3)
+                    .font(metricFont)
                     Text("Descent")
-                        .font(.caption)
+                        .font(metricLabelFont)
                         .foregroundColor(.secondary)
                 }
             }
@@ -186,6 +200,11 @@ struct DashboardView: View {
             let feet = meters * 3.28084
             return "\(Int(feet.rounded())) ft"
         }
+    }
+
+    private func formatPressure(_ kilopascals: Double) -> String {
+        guard kilopascals > 0 else { return "— hPa" }
+        return String(format: "%.0f hPa", kilopascals * 10)
     }
 
     private func formatDuration(_ duration: TimeInterval) -> String {

@@ -12,7 +12,7 @@ import WidgetKit
 struct BikeComputerWidgetControl: ControlWidget {
     var body: some ControlWidgetConfiguration {
         StaticControlConfiguration(
-            kind: "com.szony.BikeComputer.BikeComputerWidget",
+            kind: "com.ensita.BikeComputer.BikeComputerWidget",
             provider: Provider()
         ) { value in
             ControlWidgetToggle(

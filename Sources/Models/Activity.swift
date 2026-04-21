@@ -10,6 +10,9 @@ final class Activity {
     var maxSpeed: Double // m/s
     var totalAscent: Double = 0 // meters
     var totalDescent: Double = 0 // meters
+    var minPressure: Double = 0 // kPa
+    var maxPressure: Double = 0 // kPa
+    var averagePressure: Double = 0 // kPa
 
     @Attribute(.externalStorage) var routeData: Data?
 

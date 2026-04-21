@@ -14,6 +14,7 @@ class ActivityManager: ObservableObject {
     @Published var averageSpeed: Double = 0 // m/s
     @Published var ascent: Double = 0 // meters
     @Published var descent: Double = 0 // meters
+    @Published var currentPressure: Double = 0 // kPa
 
     private var locationManager: LocationManager
     private let altimeterManager = AltimeterManager()
@@ -73,6 +74,7 @@ class ActivityManager: ObservableObject {
         averageSpeed = 0
         ascent = 0
         descent = 0
+        currentPressure = 0
         routePoints = []
         lastLocation = nil
 
@@ -90,6 +92,9 @@ class ActivityManager: ObservableObject {
             .store(in: &altimeterCancellables)
         altimeterManager.$descent
             .assign(to: \.descent, on: self)
+            .store(in: &altimeterCancellables)
+        altimeterManager.$currentPressure
+            .assign(to: \.currentPressure, on: self)
             .store(in: &altimeterCancellables)
         startLiveActivity()
         
@@ -255,6 +260,9 @@ class ActivityManager: ObservableObject {
         activity.averageSpeed = averageSpeed
         activity.totalAscent = ascent
         activity.totalDescent = descent
+        activity.minPressure = altimeterManager.minPressure
+        activity.maxPressure = altimeterManager.maxPressure
+        activity.averagePressure = altimeterManager.averagePressure
         
         // Save route data
         if let encodedRoute = try? JSONEncoder().encode(routePoints) {
