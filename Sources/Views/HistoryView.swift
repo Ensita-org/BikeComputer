@@ -109,7 +109,9 @@ struct HistoryView: View {
             try? snapshot.content.write(to: fileURL, atomically: true, encoding: .utf8)
         }
 
-        let dateStamp = ISO8601DateFormatter.localDateOnly.string(from: Date())
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withYear, .withMonth, .withDay, .withDashSeparatorInDate]
+        let dateStamp = formatter.string(from: Date())
         let destination = fm.temporaryDirectory.appendingPathComponent("BikeComputer_Rides_\(dateStamp).zip")
         try? fm.removeItem(at: destination)
 
@@ -171,12 +173,4 @@ private struct ShareSheet: UIViewControllerRepresentable {
     }
 
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
-}
-
-private extension ISO8601DateFormatter {
-    static let localDateOnly: ISO8601DateFormatter = {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withYear, .withMonth, .withDay, .withDashSeparatorInDate]
-        return formatter
-    }()
 }
