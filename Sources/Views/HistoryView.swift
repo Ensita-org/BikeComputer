@@ -1,11 +1,14 @@
 import SwiftUI
 import SwiftData
+import UIKit
 
 struct HistoryView: View {
     @Query(sort: \Activity.timestamp, order: .reverse) private var activities: [Activity]
     @Environment(\.modelContext) private var modelContext
     @AppStorage("useMetricUnits") private var useMetricUnits: Bool = true
     @State private var showingSettings = false
+    @State private var exportedArchive: ExportedArchive?
+    @State private var isExporting = false
 
     var body: some View {
         List {
@@ -44,15 +47,85 @@ struct HistoryView: View {
                 }
                 .accessibilityLabel("Settings")
             }
+            if !activities.isEmpty {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        exportAll()
+                    } label: {
+                        if isExporting {
+                            ProgressView()
+                        } else {
+                            Image(systemName: "square.and.arrow.up")
+                        }
+                    }
+                    .disabled(isExporting)
+                    .accessibilityLabel("Export all activities")
+                }
+            }
         }
         .sheet(isPresented: $showingSettings) {
             SettingsView()
+        }
+        .sheet(item: $exportedArchive) { archive in
+            ShareSheet(items: [archive.url])
         }
         .overlay {
             if activities.isEmpty {
                 ContentUnavailableView("No Rides Yet", systemImage: "bicycle", description: Text("Go for a ride to see it here."))
             }
         }
+    }
+
+    private func exportAll() {
+        guard !isExporting else { return }
+        isExporting = true
+        // Snapshot on the main actor — Activity is a SwiftData model and
+        // can't cross actor boundaries.
+        let snapshots = activities.map { GPXSnapshot(filename: $0.gpxFilename, content: $0.gpxString) }
+        Task.detached {
+            let url = Self.createArchive(from: snapshots)
+            await MainActor.run {
+                isExporting = false
+                if let url = url {
+                    exportedArchive = ExportedArchive(url: url)
+                }
+            }
+        }
+    }
+
+    /// Writes every activity's GPX into a temp folder, then asks
+    /// NSFileCoordinator to produce a zip with `.forUploading` — a built-in
+    /// iOS facility that avoids a third-party archive dependency.
+    nonisolated private static func createArchive(from snapshots: [GPXSnapshot]) -> URL? {
+        let fm = FileManager.default
+        let workDir = fm.temporaryDirectory.appendingPathComponent("BikeComputerRides-\(UUID().uuidString)", isDirectory: true)
+        do {
+            try fm.createDirectory(at: workDir, withIntermediateDirectories: true)
+        } catch {
+            return nil
+        }
+        for snapshot in snapshots {
+            let fileURL = workDir.appendingPathComponent(snapshot.filename)
+            try? snapshot.content.write(to: fileURL, atomically: true, encoding: .utf8)
+        }
+
+        let dateStamp = ISO8601DateFormatter.localDateOnly.string(from: Date())
+        let destination = fm.temporaryDirectory.appendingPathComponent("BikeComputer_Rides_\(dateStamp).zip")
+        try? fm.removeItem(at: destination)
+
+        var coordError: NSError?
+        var finalURL: URL?
+        NSFileCoordinator().coordinate(readingItemAt: workDir, options: [.forUploading], error: &coordError) { zipURL in
+            do {
+                try fm.copyItem(at: zipURL, to: destination)
+                finalURL = destination
+            } catch {
+                finalURL = nil
+            }
+        }
+
+        try? fm.removeItem(at: workDir)
+        return finalURL
     }
 
     private func formatDistance(_ meters: Double) -> String {
@@ -78,4 +151,32 @@ struct HistoryView: View {
         formatter.unitsStyle = .abbreviated
         return formatter.string(from: duration) ?? "0m"
     }
+}
+
+private struct GPXSnapshot: Sendable {
+    let filename: String
+    let content: String
+}
+
+private struct ExportedArchive: Identifiable {
+    let id = UUID()
+    let url: URL
+}
+
+private struct ShareSheet: UIViewControllerRepresentable {
+    let items: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+}
+
+private extension ISO8601DateFormatter {
+    static let localDateOnly: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withYear, .withMonth, .withDay, .withDashSeparatorInDate]
+        return formatter
+    }()
 }

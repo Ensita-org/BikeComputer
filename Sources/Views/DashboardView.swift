@@ -20,8 +20,8 @@ struct DashboardView: View {
     }
     
     var body: some View {
-        let metricFont: Font = showWeather ? .title3 : .largeTitle
-        let metricLabelFont: Font = showWeather ? .caption : .subheadline
+        let metricFont: Font = showWeather ? .title2 : .largeTitle
+        let metricLabelFont: Font = showWeather ? .footnote : .subheadline
         VStack(spacing: 20) {
             // Weather Header
             if showWeather {
@@ -219,15 +219,17 @@ struct DashboardView: View {
 struct StatBox: View {
     let title: String
     let value: String
-    
+
     var body: some View {
         VStack {
             Text(title)
-                .font(.caption)
+                .font(.footnote)
                 .foregroundColor(.secondary)
             Text(value)
-                .font(.title2)
+                .font(.title)
                 .fontWeight(.semibold)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
         }
         .frame(maxWidth: .infinity)
         .padding()

@@ -126,37 +126,9 @@ struct ActivityDetailView: View {
     }
     
     private func generateGPX() -> URL {
-        let fileName = "activity_\(Int(activity.timestamp.timeIntervalSince1970)).gpx"
-        let tempUrl = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
-        
-        var trackPointsXml = ""
-        
-        if let routeData = activity.routeData,
-           let routePoints = try? JSONDecoder().decode([RoutePoint].self, from: routeData) {
-            
-            let dateFormatter = ISO8601DateFormatter()
-            
-            for point in routePoints {
-                trackPointsXml += """
-                
-                    <trkpt lat="\(point.latitude)" lon="\(point.longitude)">
-                        <ele>\(point.altitude)</ele>
-                        <time>\(dateFormatter.string(from: point.timestamp))</time>
-                    </trkpt>
-                """
-            }
-        }
-        
-        let gpxString = """
-        <?xml version="1.0" encoding="UTF-8"?>
-        <gpx version="1.1" creator="BikeComputer">
-          <trk>
-            <name>Ride on \(activity.timestamp.formatted())</name>
-            <trkseg>\(trackPointsXml)
-            </trkseg>
-          </trk>
-        </gpx>
-        """
+        let tempDir = FileManager.default.temporaryDirectory
+        let tempUrl = tempDir.appendingPathComponent(activity.gpxFilename)
+        let gpxString = activity.gpxString
         
         try? gpxString.write(to: tempUrl, atomically: true, encoding: .utf8)
         return tempUrl
