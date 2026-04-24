@@ -25,6 +25,7 @@ class ActivityManager: ObservableObject {
     private var pauseStartTime: Date?
     private var totalPausedDuration: TimeInterval = 0
     private var lastLocation: CLLocation?
+    private var lastLocationUpdate: Date?
     private var routePoints: [RoutePoint] = []
 
     private var locationsCancellable: AnyCancellable?
@@ -75,8 +76,10 @@ class ActivityManager: ObservableObject {
         ascent = 0
         descent = 0
         currentPressure = 0
+        currentSpeed = 0
         routePoints = []
         lastLocation = nil
+        lastLocationUpdate = nil
 
         // Prevent screen from sleeping if setting is enabled
         let preventLock = UserDefaults.standard.object(forKey: "preventScreenLock") as? Bool ?? true
@@ -123,16 +126,19 @@ class ActivityManager: ObservableObject {
          }
         
         isPaused = false
+        currentSpeed = 0
+        lastLocationUpdate = nil
         updateElapsedTime() // Final update
         endLiveActivity()
-        
+
         saveActivity()
     }
-    
+
     func pauseActivity() {
         guard isRecording, !isPaused else { return }
         isPaused = true
         pauseStartTime = Date()
+        currentSpeed = 0
         updateLiveActivity()
     }
 
@@ -151,11 +157,17 @@ class ActivityManager: ObservableObject {
         let now = Date()
         // Current elapsed = (now - start) - totalPausedDuration
         self.elapsedTime = now.timeIntervalSince(start) - totalPausedDuration
+        // If no location update has arrived for >3 s, the rider is stationary
+        // (CoreLocation throttles updates via distanceFilter). Decay speed to 0.
+        if let last = lastLocationUpdate, now.timeIntervalSince(last) > 3 {
+            currentSpeed = 0
+        }
         updateLiveActivity()
     }
     
     private func handleLocationUpdate(_ location: CLLocation?) {
         guard isRecording, !isPaused, let location = location else { return }
+        lastLocationUpdate = Date()
         
         // Add to route
         let point = RoutePoint(
