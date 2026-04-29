@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import UIKit
+import UniformTypeIdentifiers
 
 struct HistoryView: View {
     @Query(sort: \Activity.timestamp, order: .reverse) private var activities: [Activity]
@@ -9,6 +10,8 @@ struct HistoryView: View {
     @State private var showingSettings = false
     @State private var exportedArchive: ExportedArchive?
     @State private var isExporting = false
+    @State private var showingImporter = false
+    @State private var importError: String?
 
     var body: some View {
         List {
@@ -47,6 +50,14 @@ struct HistoryView: View {
                 }
                 .accessibilityLabel("Settings")
             }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showingImporter = true
+                } label: {
+                    Image(systemName: "square.and.arrow.down")
+                }
+                .accessibilityLabel("Import ride")
+            }
             if !activities.isEmpty {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
@@ -69,12 +80,52 @@ struct HistoryView: View {
         .sheet(item: $exportedArchive) { archive in
             ShareSheet(items: [archive.url])
         }
+        .fileImporter(
+            isPresented: $showingImporter,
+            allowedContentTypes: importableTypes,
+            allowsMultipleSelection: false,
+            onCompletion: handleImport
+        )
+        .alert("Import Failed", isPresented: .init(
+            get: { importError != nil },
+            set: { if !$0 { importError = nil } }
+        )) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(importError ?? "")
+        }
         .overlay {
             if activities.isEmpty {
                 ContentUnavailableView("No Rides Yet", systemImage: "bicycle", description: Text("Go for a ride to see it here."))
             }
         }
     }
+
+    // MARK: - Import
+
+    private var importableTypes: [UTType] {
+        var types: [UTType] = []
+        if let gpx = UTType(filenameExtension: "gpx") { types.append(gpx) }
+        if let zip = UTType(filenameExtension: "zip") { types.append(zip) }
+        return types.isEmpty ? [.xml, .data] : types
+    }
+
+    private func handleImport(result: Result<[URL], Error>) {
+        do {
+            guard let url = try result.get().first else { return }
+            let accessing = url.startAccessingSecurityScopedResource()
+            defer { if accessing { url.stopAccessingSecurityScopedResource() } }
+            if url.pathExtension.lowercased() == "zip" {
+                try RideImporter.importZIP(url: url, into: modelContext)
+            } else {
+                try RideImporter.importGPX(data: Data(contentsOf: url), into: modelContext)
+            }
+        } catch {
+            importError = error.localizedDescription
+        }
+    }
+
+    // MARK: - Export
 
     private func exportAll() {
         guard !isExporting else { return }

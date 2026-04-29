@@ -18,11 +18,33 @@ struct DashboardView: View {
         _locationManager = StateObject(wrappedValue: locManager)
         _activityManager = StateObject(wrappedValue: ActivityManager(locationManager: locManager))
     }
-    
+
+    private var gpsIsReady: Bool {
+        activityManager.gpsAccuracy >= 0 && activityManager.gpsAccuracy <= 25
+    }
+
     var body: some View {
         let metricFont: Font = showWeather ? .title2 : .largeTitle
         let metricLabelFont: Font = showWeather ? .footnote : .subheadline
         VStack(spacing: 20) {
+            // GPS accuracy badge — visible only while signal is being acquired
+            if !gpsIsReady {
+                HStack(spacing: 6) {
+                    Image(systemName: "location.slash")
+                        .font(.caption)
+                    Text(activityManager.gpsAccuracy < 0
+                         ? "Acquiring GPS…"
+                         : String(format: "GPS ±%.0f m", activityManager.gpsAccuracy))
+                        .font(.caption)
+                        .fontWeight(.medium)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(Color.orange.opacity(0.15))
+                .foregroundColor(.orange)
+                .clipShape(Capsule())
+            }
+
             // Weather Header
             if showWeather {
                 if let weather = weatherManager.currentWeather {
