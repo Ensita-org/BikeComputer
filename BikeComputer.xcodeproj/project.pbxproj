@@ -10,6 +10,7 @@
 		0E0D8DF12F3CC178001F2D64 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E0D8DF02F3CC178001F2D64 /* WidgetKit.framework */; };
 		0E0D8DF32F3CC178001F2D64 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E0D8DF22F3CC178001F2D64 /* SwiftUI.framework */; };
 		0E0D8E022F3CC179001F2D64 /* BikeComputerWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 0E0D8DEE2F3CC178001F2D64 /* BikeComputerWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		0ED0CC9C2FA2A2260094A1A3 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 0ED0CC9B2FA2A2260094A1A3 /* ZIPFoundation */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -100,6 +101,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0ED0CC9C2FA2A2260094A1A3 /* ZIPFoundation in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -167,6 +169,7 @@
 			);
 			name = BikeComputer;
 			packageProductDependencies = (
+				0ED0CC9B2FA2A2260094A1A3 /* ZIPFoundation */,
 			);
 			productName = BikeComputer;
 			productReference = 0E0D8D9E2F393821001F2D64 /* BikeComputer.app */;
@@ -597,6 +600,14 @@
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		0ED0CC9B2FA2A2260094A1A3 /* ZIPFoundation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0ED0CABB2FA289340094A1A3 /* XCRemoteSwiftPackageReference "ZipFoundation" */;
+			productName = ZIPFoundation;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 0E0D8D962F393821001F2D64 /* Project object */;
 }
