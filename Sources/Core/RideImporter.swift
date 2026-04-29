@@ -61,7 +61,7 @@ struct RideImporter {
         let ts = ride.timestamp
         let predicate = #Predicate<Activity> { $0.timestamp == ts }
         let descriptor = FetchDescriptor(predicate: predicate)
-        return (try? context.fetchCount(descriptor) ?? 0) ?? 0 > 0
+        return (try? context.fetchCount(descriptor)) ?? 0 > 0
     }
 
     private static func insert(_ ride: ParsedRide, into context: ModelContext) {
