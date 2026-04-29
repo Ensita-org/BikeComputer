@@ -57,7 +57,15 @@ struct RideImporter {
 
     // MARK: - Private
 
+    private static func isDuplicate(_ ride: ParsedRide, in context: ModelContext) -> Bool {
+        let ts = ride.timestamp
+        let predicate = #Predicate<Activity> { $0.timestamp == ts }
+        let descriptor = FetchDescriptor(predicate: predicate)
+        return (try? context.fetchCount(descriptor) ?? 0) ?? 0 > 0
+    }
+
     private static func insert(_ ride: ParsedRide, into context: ModelContext) {
+        guard !isDuplicate(ride, in: context) else { return }
         let activity = Activity(
             timestamp: ride.timestamp,
             distance: ride.distance,
