@@ -1,0 +1,71 @@
+import Foundation
+import SwiftData
+import ZIPFoundation
+
+enum ImportError: LocalizedError {
+    case noValidRides
+    case unreadableFile
+
+    var errorDescription: String? {
+        switch self {
+        case .noValidRides:
+            return String(localized: "No valid GPX rides found in the file.")
+        case .unreadableFile:
+            return String(localized: "The file could not be read.")
+        }
+    }
+}
+
+struct RideImporter {
+
+    static func importGPX(data: Data, into context: ModelContext) throws {
+        guard let ride = GPXParser().parse(data: data) else {
+            throw ImportError.noValidRides
+        }
+        insert(ride, into: context)
+        try context.save()
+    }
+
+    static func importZIP(url: URL, into context: ModelContext) throws {
+        let archive: Archive
+        do {
+            archive = try Archive(url: url, accessMode: .read)
+        } catch {
+            throw ImportError.unreadableFile
+        }
+        var imported = 0
+        for entry in archive
+            where !entry.path.hasPrefix("__MACOSX") && entry.path.hasSuffix(".gpx") {
+            var data = Data()
+            _ = try archive.extract(entry) { chunk in data.append(chunk) }
+            if let ride = GPXParser().parse(data: data) {
+                insert(ride, into: context)
+                imported += 1
+            }
+        }
+        guard imported > 0 else { throw ImportError.noValidRides }
+        try context.save()
+    }
+
+    // MARK: - Private
+
+    private static func isDuplicate(_ ride: ParsedRide, in context: ModelContext) -> Bool {
+        let ts = ride.timestamp
+        let predicate = #Predicate<Activity> { $0.timestamp == ts }
+        let descriptor = FetchDescriptor(predicate: predicate)
+        return (try? context.fetchCount(descriptor)) ?? 0 > 0
+    }
+
+    private static func insert(_ ride: ParsedRide, into context: ModelContext) {
+        guard !isDuplicate(ride, in: context) else { return }
+        let activity = Activity(
+            timestamp: ride.timestamp,
+            distance: ride.distance,
+            duration: ride.duration
+        )
+        activity.averageSpeed = ride.averageSpeed
+        activity.maxSpeed = ride.maxSpeed
+        activity.routeData = try? JSONEncoder().encode(ride.points)
+        context.insert(activity)
+    }
+}

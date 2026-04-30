@@ -5,6 +5,7 @@ struct ActivityDetailView: View {
     let activity: Activity
     @AppStorage("useMetricUnits") private var useMetricUnits: Bool = true
     @AppStorage("showMap") private var showMap: Bool = true
+    @Environment(\.appBundle) private var bundle
 
     var body: some View {
         ScrollView {
@@ -31,18 +32,17 @@ struct ActivityDetailView: View {
                             .padding(.horizontal)
                     }
                 } else {
-                    // Fallback if no route data
                     Rectangle()
                         .fill(Color.gray.opacity(0.2))
                         .frame(height: 250)
                         .overlay(
-                            Text("No route data available")
+                            Text("No route data available", bundle: bundle)
                                 .foregroundColor(.secondary)
                         )
                         .cornerRadius(15)
                         .padding(.horizontal)
                 }
-                
+
                 // Stats
                 VStack(spacing: 15) {
                     DetailRow(title: "Date", value: activity.timestamp.formatted(date: .long, time: .shortened))
@@ -66,10 +66,12 @@ struct ActivityDetailView: View {
                 .background(Color.gray.opacity(0.1))
                 .cornerRadius(15)
                 .padding(.horizontal)
-                
-                // Export Button
-                ShareLink(item: generateGPX(), preview: SharePreview("Activity GPX", image: Image(systemName: "map"))) {
-                    Label("Export GPX", systemImage: "square.and.arrow.up")
+
+                ShareLink(
+                    item: generateGPX(),
+                    preview: SharePreview(bundle.localizedString(forKey: "Activity GPX", value: nil, table: nil), image: Image(systemName: "map"))
+                ) {
+                    Label(bundle.localizedString(forKey: "Export GPX", value: nil, table: nil), systemImage: "square.and.arrow.up")
                         .font(.headline)
                         .padding()
                         .frame(maxWidth: .infinity)
@@ -80,10 +82,10 @@ struct ActivityDetailView: View {
                 .padding()
             }
         }
-        .navigationTitle("Ride Details")
+        .navigationTitle(bundle.localizedString(forKey: "Ride Details", value: nil, table: nil))
         .navigationBarTitleDisplayMode(.inline)
     }
-    
+
     private func formatDuration(_ duration: TimeInterval) -> String {
         let formatter = DateComponentsFormatter()
         formatter.allowedUnits = [.hour, .minute, .second]
@@ -120,28 +122,27 @@ struct ActivityDetailView: View {
     }
 
     private func formatPressure(_ kilopascals: Double) -> String {
-        // Store is kPa, display in hPa (millibars) — the unit weather reports use.
         let hPa = kilopascals * 10
         return String(format: "%.0f hPa", hPa)
     }
-    
+
     private func generateGPX() -> URL {
         let tempDir = FileManager.default.temporaryDirectory
         let tempUrl = tempDir.appendingPathComponent(activity.gpxFilename)
         let gpxString = activity.gpxString
-        
         try? gpxString.write(to: tempUrl, atomically: true, encoding: .utf8)
         return tempUrl
     }
 }
 
 struct DetailRow: View {
-    let title: String
+    let title: LocalizedStringKey
     let value: String
+    @Environment(\.appBundle) private var bundle
 
     var body: some View {
         HStack {
-            Text(title)
+            Text(title, bundle: bundle)
                 .foregroundColor(.secondary)
             Spacer()
             Text(value)
@@ -165,7 +166,6 @@ private struct RoutePolylineView: View {
 
                 let latRange = max(maxLat - minLat, 0.0001)
                 let lonRange = max(maxLon - minLon, 0.0001)
-                // Correct longitude for the mid-latitude so the route isn't horizontally squashed.
                 let lonAspect = cos((minLat + maxLat) / 2 * .pi / 180)
                 let inset: CGFloat = 20
                 let usableW = geo.size.width - 2 * inset

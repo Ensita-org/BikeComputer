@@ -17,6 +17,8 @@ struct BikeComputerApp: App {
     }()
 
     @AppStorage("displayMode") private var displayMode: Int = 0
+    @StateObject private var languageManager = LanguageManager()
+    @State private var showWhatsNew = false
 
     private var selectedColorScheme: ColorScheme? {
         switch displayMode {
@@ -25,12 +27,28 @@ struct BikeComputerApp: App {
         default: return nil
         }
     }
-    
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .id(languageManager.currentCode)
+                .environment(\.appBundle, languageManager.currentBundle)
+                .environmentObject(languageManager)
                 .preferredColorScheme(selectedColorScheme)
+                .sheet(isPresented: $showWhatsNew) {
+                    WhatsNewView()
+                }
+                .onAppear(perform: checkVersion)
         }
         .modelContainer(sharedModelContainer)
+    }
+
+    private func checkVersion() {
+        let current = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
+        let stored = UserDefaults.standard.string(forKey: "lastSeenVersion") ?? ""
+        if stored != current {
+            UserDefaults.standard.set(current, forKey: "lastSeenVersion")
+            showWhatsNew = true
+        }
     }
 }

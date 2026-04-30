@@ -15,6 +15,14 @@ class ActivityManager: ObservableObject {
     @Published var ascent: Double = 0 // meters
     @Published var descent: Double = 0 // meters
     @Published var currentPressure: Double = 0 // kPa
+    /// Horizontal accuracy of the most recent GPS fix in metres. Negative = unavailable.
+    @Published var gpsAccuracy: Double = -1
+
+    // Points whose horizontal error circle exceeds this threshold are excluded
+    // from distance accumulation and route recording (GPS still acquiring).
+    private let gpsAccuracyThreshold: Double = 25.0
+    // Implied speed above this value (≈ 90 km/h) signals a GPS jump, not real movement.
+    private let maxPlausibleSpeedMs: Double = 25.0
 
     private var locationManager: LocationManager
     private let altimeterManager = AltimeterManager()
@@ -80,6 +88,7 @@ class ActivityManager: ObservableObject {
         routePoints = []
         lastLocation = nil
         lastLocationUpdate = nil
+        gpsAccuracy = -1
 
         // Prevent screen from sleeping if setting is enabled
         let preventLock = UserDefaults.standard.object(forKey: "preventScreenLock") as? Bool ?? true
@@ -167,9 +176,26 @@ class ActivityManager: ObservableObject {
     
     private func handleLocationUpdate(_ location: CLLocation?) {
         guard isRecording, !isPaused, let location = location else { return }
+
+        // Always update so the speed-decay timer and GPS badge stay live.
         lastLocationUpdate = Date()
-        
-        // Add to route
+        gpsAccuracy = location.horizontalAccuracy
+
+        // Layer 1 — staleness: reject cached fixes from before this session started.
+        // CoreLocation often delivers the last known location immediately on start.
+        if let sessionStart = startTime, location.timestamp < sessionStart.addingTimeInterval(-1) {
+            return
+        }
+
+        // Layer 2 — accuracy: skip points whose error circle exceeds the threshold.
+        // During warm-up horizontalAccuracy can be 100–500 m; distance between two
+        // such uncertain points is noise, not real movement.
+        guard location.horizontalAccuracy >= 0,
+              location.horizontalAccuracy <= gpsAccuracyThreshold else {
+            currentSpeed = max(0, location.speed)
+            return
+        }
+
         let point = RoutePoint(
             latitude: location.coordinate.latitude,
             longitude: location.coordinate.longitude,
@@ -177,21 +203,28 @@ class ActivityManager: ObservableObject {
             timestamp: location.timestamp
         )
         routePoints.append(point)
-        
+
         currentSpeed = max(0, location.speed)
-        
+
         if let last = lastLocation {
             let delta = location.distance(from: last)
-            distance += delta
+
+            // Layer 3 — plausibility: reject deltas that imply a physically impossible
+            // cycling speed. This catches the jump when the first accurate fix is far
+            // from the last inaccurate one, or momentary GPS multipath errors.
+            let timeDelta = location.timestamp.timeIntervalSince(last.timestamp)
+            let impliedSpeed = timeDelta > 0 ? delta / timeDelta : 0
+            if impliedSpeed <= maxPlausibleSpeedMs {
+                distance += delta
+            }
         }
-        
+
         lastLocation = location
-        
-        // Update average speed (m/s)
+
         if elapsedTime > 0 {
             averageSpeed = distance / elapsedTime
         }
-        
+
         updateLiveActivity()
     }
     

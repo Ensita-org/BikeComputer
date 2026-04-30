@@ -20,7 +20,9 @@ xcuserdata/
 ## Other
 *.moved-aside
 *.xccheckout
-*.xcworkspace
+# Ignore standalone .xcworkspace bundles at repo root (e.g. CocoaPods)
+# but NOT the project.xcworkspace embedded inside .xcodeproj
+/*.xcworkspace
 !default.xcworkspace
 
 ## Obj-C/Swift specific
@@ -68,7 +70,6 @@ Carthage/Build
 # gemini
 .gemini
 
-README.md
 Instructions.md
 
 # claude
@@ -83,3 +84,6 @@ Instructions.md
 .env
 .env.*
 AuthKey_*.p8
+
+# claude
+CLAUDE.md
