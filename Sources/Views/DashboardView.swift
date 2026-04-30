@@ -7,12 +7,13 @@ struct DashboardView: View {
     @StateObject private var weatherManager = WeatherManager()
     @StateObject private var activityManager: ActivityManager
     @Environment(\.modelContext) private var modelContext
-    
+    @Environment(\.appBundle) private var bundle
+
     @AppStorage("useMetricUnits") private var useMetricUnits: Bool = true
     @AppStorage("useMonospacedFont") private var useMonospacedFont: Bool = false
     @AppStorage("showWeather") private var showWeather: Bool = true
     @State private var showingSettings = false
-    
+
     init() {
         let locManager = LocationManager()
         _locationManager = StateObject(wrappedValue: locManager)
@@ -33,8 +34,8 @@ struct DashboardView: View {
                     Image(systemName: "location.slash")
                         .font(.caption)
                     Text(activityManager.gpsAccuracy < 0
-                         ? String(localized: "Acquiring GPS…")
-                         : String(format: String(localized: "GPS ±%.0f m"), activityManager.gpsAccuracy))
+                         ? bundle.localizedString(forKey: "Acquiring GPS\u{2026}", value: nil, table: nil)
+                         : String(format: bundle.localizedString(forKey: "GPS \u{00b1}%.0f m", value: nil, table: nil), activityManager.gpsAccuracy))
                         .font(.caption)
                         .fontWeight(.medium)
                 }
@@ -62,7 +63,7 @@ struct DashboardView: View {
                     .background(.thinMaterial)
                     .cornerRadius(15)
                 } else {
-                    Text("Loading Weather...")
+                    Text("Loading Weather...", bundle: bundle)
                         .font(.caption)
                         .onAppear {
                             if let loc = locationManager.location {
@@ -89,7 +90,7 @@ struct DashboardView: View {
                         Text(formatElevation(activityManager.ascent))
                     }
                     .font(metricFont)
-                    Text("Ascent")
+                    Text("Ascent", bundle: bundle)
                         .font(metricLabelFont)
                         .foregroundColor(.secondary)
                 }
@@ -98,7 +99,7 @@ struct DashboardView: View {
                     Text(formatPressure(activityManager.currentPressure))
                         .font(metricFont)
                         .monospacedDigit()
-                    Text("Pressure")
+                    Text("Pressure", bundle: bundle)
                         .font(metricLabelFont)
                         .foregroundColor(.secondary)
                 }
@@ -109,7 +110,7 @@ struct DashboardView: View {
                         Image(systemName: "arrow.down.right")
                     }
                     .font(metricFont)
-                    Text("Descent")
+                    Text("Descent", bundle: bundle)
                         .font(metricLabelFont)
                         .foregroundColor(.secondary)
                 }
@@ -117,10 +118,10 @@ struct DashboardView: View {
             .padding(.horizontal)
 
             Spacer()
-            
+
             // Speed
             VStack {
-                Text("Speed")
+                Text("Speed", bundle: bundle)
                     .font(.headline)
                     .foregroundColor(.secondary)
                 VStack(spacing: -20) {
@@ -130,14 +131,14 @@ struct DashboardView: View {
                         .minimumScaleFactor(0.4)
                         .lineLimit(1)
                         .padding(.horizontal)
-                    Text(useMetricUnits ? "km/h" : "mph")
+                    Text(useMetricUnits ? "km/h" : "mph", bundle: bundle)
                         .font(.title)
                         .foregroundColor(.secondary)
                 }
             }
-            
+
             Spacer()
-            
+
             // Stats Grid
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
                 StatBox(title: "Distance", value: {
@@ -154,9 +155,9 @@ struct DashboardView: View {
                 StatBox(title: "Altitude", value: "\(Int((locationManager.location?.altitude ?? 0))) m")
             }
             .padding()
-            
+
             Spacer()
-            
+
             // Controls
             VStack(spacing: 12) {
                 Button(action: {
@@ -167,7 +168,7 @@ struct DashboardView: View {
                         activityManager.startActivity()
                     }
                 }) {
-                    Text(activityManager.isRecording ? "Stop Ride" : "Start Ride")
+                    Text(activityManager.isRecording ? "Stop Ride" : "Start Ride", bundle: bundle)
                         .font(.title2)
                         .fontWeight(.bold)
                         .foregroundColor(.white)
@@ -185,7 +186,7 @@ struct DashboardView: View {
                             activityManager.pauseActivity()
                         }
                     }) {
-                        Text(activityManager.isPaused ? "Resume" : "Pause")
+                        Text(activityManager.isPaused ? "Resume" : "Pause", bundle: bundle)
                             .font(.headline)
                             .foregroundColor(.white)
                             .padding()
@@ -207,14 +208,14 @@ struct DashboardView: View {
                 } label: {
                     Image(systemName: "gearshape")
                 }
-                .accessibilityLabel("Settings")
+                .accessibilityLabel(bundle.localizedString(forKey: "Settings", value: nil, table: nil))
             }
         }
         .sheet(isPresented: $showingSettings) {
             SettingsView()
         }
     }
-    
+
     private func formatElevation(_ meters: Double) -> String {
         if useMetricUnits {
             return "\(Int(meters.rounded())) m"
@@ -241,10 +242,11 @@ struct DashboardView: View {
 struct StatBox: View {
     let title: LocalizedStringKey
     let value: String
+    @Environment(\.appBundle) private var bundle
 
     var body: some View {
         VStack {
-            Text(title)
+            Text(title, bundle: bundle)
                 .font(.footnote)
                 .foregroundColor(.secondary)
             Text(value)
@@ -259,4 +261,3 @@ struct StatBox: View {
         .cornerRadius(10)
     }
 }
-

@@ -31,6 +31,7 @@ struct BikeComputerApp: App {
         WindowGroup {
             ContentView()
                 .id(languageManager.currentCode)
+                .environment(\.appBundle, languageManager.currentBundle)
                 .environmentObject(languageManager)
                 .preferredColorScheme(selectedColorScheme)
         }

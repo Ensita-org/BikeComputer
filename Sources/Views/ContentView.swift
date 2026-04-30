@@ -6,6 +6,7 @@ struct ContentView: View {
     @AppStorage("useMetricUnits") private var useMetricUnits: Bool = true
     @State private var showingSettings = false
     @State private var selectedPeriod: Period = .total
+    @Environment(\.appBundle) private var bundle
 
     enum Period: String, CaseIterable, Identifiable {
         case today = "Today"
@@ -33,12 +34,12 @@ struct ContentView: View {
         }
     }
 
-    private var periodOdometerLabel: String {
+    private func periodOdometerLabel(bundle: Bundle) -> String {
         switch selectedPeriod {
-        case .total: return String(localized: "All Time Odometer")
-        case .today: return String(localized: "Today's Odometer")
-        case .week: return String(localized: "This Week's Odometer")
-        case .month: return String(localized: "This Month's Odometer")
+        case .total: return bundle.localizedString(forKey: "All Time Odometer", value: nil, table: nil)
+        case .today: return bundle.localizedString(forKey: "Today's Odometer", value: nil, table: nil)
+        case .week:  return bundle.localizedString(forKey: "This Week's Odometer", value: nil, table: nil)
+        case .month: return bundle.localizedString(forKey: "This Month's Odometer", value: nil, table: nil)
         }
     }
 
@@ -61,13 +62,13 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 30) {
-                Text("Bike Computer")
+                Text("Bike Computer", bundle: bundle)
                     .font(.largeTitle)
                     .fontWeight(.bold)
 
                 // Odometer
                 VStack {
-                    Text(periodOdometerLabel)
+                    Text(periodOdometerLabel(bundle: bundle))
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                     Text(String(format: useMetricUnits ? "%.1f km" : "%.1f mi", useMetricUnits ? totalOdometer / 1000 : (totalOdometer / 1000) * 0.621371))
@@ -82,9 +83,9 @@ struct ContentView: View {
                     TotalBox(title: "Time", value: formatTotalDuration(totalDuration))
                 }
                 .padding(.horizontal)
-                
+
                 NavigationLink(destination: DashboardView()) {
-                    Label("Start Ride / Computer", systemImage: "bicycle")
+                    Label(bundle.localizedString(forKey: "Start Ride / Computer", value: nil, table: nil), systemImage: "bicycle")
                         .font(.title2)
                         .padding()
                         .frame(maxWidth: .infinity)
@@ -92,9 +93,9 @@ struct ContentView: View {
                         .foregroundColor(.white)
                         .cornerRadius(15)
                 }
-                
+
                 NavigationLink(destination: HistoryView()) {
-                    Label("History", systemImage: "clock")
+                    Label(bundle.localizedString(forKey: "History", value: nil, table: nil), systemImage: "clock")
                         .font(.title2)
                         .padding()
                         .frame(maxWidth: .infinity)
@@ -103,15 +104,17 @@ struct ContentView: View {
                         .cornerRadius(15)
                 }
 
-                Picker("Period", selection: $selectedPeriod) {
+                Picker(selection: $selectedPeriod) {
                     ForEach(Period.allCases) { period in
-                        Text(LocalizedStringKey(period.rawValue)).tag(period)
+                        Text(bundle.localizedString(forKey: period.rawValue, value: nil, table: nil)).tag(period)
                     }
+                } label: {
+                    Text("Period", bundle: bundle)
                 }
                 .pickerStyle(.segmented)
             }
             .padding()
-            .navigationTitle("Menu")
+            .navigationTitle(bundle.localizedString(forKey: "Menu", value: nil, table: nil))
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: {
@@ -119,6 +122,7 @@ struct ContentView: View {
                     }) {
                         Image(systemName: "gearshape")
                     }
+                    .accessibilityLabel(bundle.localizedString(forKey: "Settings", value: nil, table: nil))
                 }
             }
             .sheet(isPresented: $showingSettings) {
@@ -150,10 +154,11 @@ struct ContentView: View {
 private struct TotalBox: View {
     let title: LocalizedStringKey
     let value: String
+    @Environment(\.appBundle) private var bundle
 
     var body: some View {
         VStack(spacing: 4) {
-            Text(title)
+            Text(title, bundle: bundle)
                 .font(.caption)
                 .foregroundColor(.secondary)
             Text(value)

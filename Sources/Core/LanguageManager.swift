@@ -10,7 +10,7 @@ final class LanguageManager: ObservableObject {
     }
 
     static let supported: [Language] = [
-        .init(id: "system", displayName: String(localized: "System Default")),
+        .init(id: "system", displayName: "System Default"),
         .init(id: "en",     displayName: "English"),
         .init(id: "fr",     displayName: "Français"),
         .init(id: "es",     displayName: "Español"),
@@ -19,41 +19,18 @@ final class LanguageManager: ObservableObject {
 
     @Published private(set) var currentCode: String
 
+    var currentBundle: Bundle {
+        guard currentCode != "system", currentCode != "en" else { return .main }
+        let path = Bundle.main.bundlePath + "/\(currentCode).lproj"
+        return Bundle(path: path) ?? .main
+    }
+
     init() {
-        let saved = UserDefaults.standard.string(forKey: "appLanguage") ?? "system"
-        currentCode = saved
-        object_setClass(Bundle.main, LanguageBundleOverride.self)
-        Self.activate(saved)
+        currentCode = UserDefaults.standard.string(forKey: "appLanguage") ?? "system"
     }
 
     func select(_ code: String) {
         UserDefaults.standard.set(code, forKey: "appLanguage")
-        Self.activate(code)
         currentCode = code
-    }
-
-    private static func activate(_ code: String) {
-        guard code != "system" else {
-            LanguageBundleOverride.override = nil
-            return
-        }
-        let path = Bundle.main.bundlePath + "/\(code).lproj"
-        guard let bundle = Bundle(path: path) else {
-            LanguageBundleOverride.override = nil
-            return
-        }
-        LanguageBundleOverride.override = bundle
-    }
-}
-
-// Intercepts all Bundle.main string lookups and redirects to the chosen lproj bundle.
-private final class LanguageBundleOverride: Bundle, @unchecked Sendable {
-    nonisolated(unsafe) static var override: Bundle?
-
-    override func localizedString(forKey key: String, value: String?, table tableName: String?) -> String {
-        guard let bundle = Self.override else {
-            return super.localizedString(forKey: key, value: value, table: tableName)
-        }
-        return bundle.localizedString(forKey: key, value: value, table: tableName)
     }
 }

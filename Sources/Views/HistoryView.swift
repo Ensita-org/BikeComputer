@@ -6,6 +6,7 @@ import UniformTypeIdentifiers
 struct HistoryView: View {
     @Query(sort: \Activity.timestamp, order: .reverse) private var activities: [Activity]
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.appBundle) private var bundle
     @AppStorage("useMetricUnits") private var useMetricUnits: Bool = true
     @State private var showingSettings = false
     @State private var exportedArchive: ExportedArchive?
@@ -40,7 +41,7 @@ struct HistoryView: View {
             }
             .onDelete(perform: deleteItems)
         }
-        .navigationTitle("History")
+        .navigationTitle(bundle.localizedString(forKey: "History", value: nil, table: nil))
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
@@ -48,7 +49,7 @@ struct HistoryView: View {
                 } label: {
                     Image(systemName: "gearshape")
                 }
-                .accessibilityLabel("Settings")
+                .accessibilityLabel(bundle.localizedString(forKey: "Settings", value: nil, table: nil))
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
@@ -56,7 +57,7 @@ struct HistoryView: View {
                 } label: {
                     Image(systemName: "square.and.arrow.down")
                 }
-                .accessibilityLabel("Import ride")
+                .accessibilityLabel(bundle.localizedString(forKey: "Import ride", value: nil, table: nil))
             }
             if !activities.isEmpty {
                 ToolbarItem(placement: .topBarLeading) {
@@ -70,7 +71,7 @@ struct HistoryView: View {
                         }
                     }
                     .disabled(isExporting)
-                    .accessibilityLabel("Export all activities")
+                    .accessibilityLabel(bundle.localizedString(forKey: "Export all activities", value: nil, table: nil))
                 }
             }
         }
@@ -86,17 +87,22 @@ struct HistoryView: View {
             allowsMultipleSelection: false,
             onCompletion: handleImport
         )
-        .alert("Import Failed", isPresented: .init(
-            get: { importError != nil },
-            set: { if !$0 { importError = nil } }
-        )) {
-            Button("OK", role: .cancel) {}
+        .alert(bundle.localizedString(forKey: "Import Failed", value: nil, table: nil),
+               isPresented: .init(
+                   get: { importError != nil },
+                   set: { if !$0 { importError = nil } }
+               )) {
+            Button(bundle.localizedString(forKey: "OK", value: nil, table: nil), role: .cancel) {}
         } message: {
             Text(importError ?? "")
         }
         .overlay {
             if activities.isEmpty {
-                ContentUnavailableView("No Rides Yet", systemImage: "bicycle", description: Text("Go for a ride to see it here."))
+                ContentUnavailableView(
+                    bundle.localizedString(forKey: "No Rides Yet", value: nil, table: nil),
+                    systemImage: "bicycle",
+                    description: Text(bundle.localizedString(forKey: "Go for a ride to see it here.", value: nil, table: nil))
+                )
             }
         }
     }
@@ -130,8 +136,6 @@ struct HistoryView: View {
     private func exportAll() {
         guard !isExporting else { return }
         isExporting = true
-        // Snapshot on the main actor — Activity is a SwiftData model and
-        // can't cross actor boundaries.
         let snapshots = activities.map { GPXSnapshot(filename: $0.gpxFilename, content: $0.gpxString) }
         Task.detached {
             let url = Self.createArchive(from: snapshots)
@@ -144,9 +148,6 @@ struct HistoryView: View {
         }
     }
 
-    /// Writes every activity's GPX into a temp folder, then asks
-    /// NSFileCoordinator to produce a zip with `.forUploading` — a built-in
-    /// iOS facility that avoids a third-party archive dependency.
     nonisolated private static func createArchive(from snapshots: [GPXSnapshot]) -> URL? {
         let fm = FileManager.default
         let workDir = fm.temporaryDirectory.appendingPathComponent("BikeComputerRides-\(UUID().uuidString)", isDirectory: true)
@@ -189,7 +190,7 @@ struct HistoryView: View {
             return String(format: "%.2f mi", km * 0.621371)
         }
     }
-    
+
     private func deleteItems(offsets: IndexSet) {
         withAnimation {
             for index in offsets {
@@ -197,7 +198,7 @@ struct HistoryView: View {
             }
         }
     }
-    
+
     private func formatDuration(_ duration: TimeInterval) -> String {
         let formatter = DateComponentsFormatter()
         formatter.allowedUnits = [.hour, .minute, .second]
