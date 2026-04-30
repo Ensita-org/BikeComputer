@@ -27,7 +27,10 @@ struct RideImporter {
     }
 
     static func importZIP(url: URL, into context: ModelContext) throws {
-        guard let archive = Archive(url: url, accessMode: .read) else {
+        let archive: Archive
+        do {
+            archive = try Archive(url: url, accessMode: .read)
+        } catch {
             throw ImportError.unreadableFile
         }
         var imported = 0
