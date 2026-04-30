@@ -1,0 +1,91 @@
+/* Dashboard */
+"Acquiring GPS…" = "Acquiring GPS…";
+"GPS ±%.0f m" = "GPS ±%.0f m";
+"Loading Weather..." = "Loading Weather...";
+"Ascent" = "Ascent";
+"Pressure" = "Pressure";
+"Descent" = "Descent";
+"Speed" = "Speed";
+"km/h" = "km/h";
+"mph" = "mph";
+"Distance" = "Distance";
+"Avg Speed" = "Avg Speed";
+"Duration" = "Duration";
+"Altitude" = "Altitude";
+"Stop Ride" = "Stop Ride";
+"Start Ride" = "Start Ride";
+"Resume" = "Resume";
+"Pause" = "Pause";
+"Settings" = "Settings";
+
+/* History */
+"History" = "History";
+"Import ride" = "Import ride";
+"Export all activities" = "Export all activities";
+"No Rides Yet" = "No Rides Yet";
+"Go for a ride to see it here." = "Go for a ride to see it here.";
+"Import Failed" = "Import Failed";
+"OK" = "OK";
+
+/* Activity Detail */
+"Ride Details" = "Ride Details";
+"Date" = "Date";
+"Total Ascent" = "Total Ascent";
+"Total Descent" = "Total Descent";
+"Lowest Pressure" = "Lowest Pressure";
+"Highest Pressure" = "Highest Pressure";
+"Average Pressure" = "Average Pressure";
+"No route data available" = "No route data available";
+"Export GPX" = "Export GPX";
+
+/* Content View */
+"Bike Computer" = "Bike Computer";
+"All Time Odometer" = "All Time Odometer";
+"Today's Odometer" = "Today's Odometer";
+"This Week's Odometer" = "This Week's Odometer";
+"This Month's Odometer" = "This Month's Odometer";
+"Start Ride / Computer" = "Start Ride / Computer";
+"Period" = "Period";
+"Today" = "Today";
+"Week" = "Week";
+"Month" = "Month";
+"All Time" = "All Time";
+"Menu" = "Menu";
+"Time" = "Time";
+
+/* Settings */
+"Units" = "Units";
+"Privacy" = "Privacy";
+"Appearance" = "Appearance";
+"Metric" = "Metric";
+"Imperial" = "Imperial";
+"Display Mode" = "Display Mode";
+"System" = "System";
+"Light" = "Light";
+"Dark" = "Dark";
+"Show Weather Widget" = "Show Weather Widget";
+"Show Map on Ride Details" = "Show Map on Ride Details";
+"Use Fixed-Width Font" = "Use Fixed-Width Font";
+"Prevent Screen Lock" = "Prevent Screen Lock";
+"Speed in km/h, distance in km, temperature in °C" = "Speed in km/h, distance in km, temperature in °C";
+"Speed in mph, distance in miles, temperature in °F" = "Speed in mph, distance in miles, temperature in °F";
+"Current weather is fetched from Open-Meteo using your location." = "Current weather is fetched from Open-Meteo using your location.";
+"No weather requests are sent. The widget is hidden on the dashboard." = "No weather requests are sent. The widget is hidden on the dashboard.";
+"Route is drawn over Apple Maps. Opening a ride sends a tile request to Apple." = "Route is drawn over Apple Maps. Opening a ride sends a tile request to Apple.";
+"Route is drawn on a plain background. No map tiles are fetched from Apple." = "Route is drawn on a plain background. No map tiles are fetched from Apple.";
+"Done" = "Done";
+
+/* Import errors */
+"No valid GPX rides found in the file." = "No valid GPX rides found in the file.";
+"The file could not be read." = "The file could not be read.";
+
+/* Weather conditions */
+"Clear Sky" = "Clear Sky";
+"Mainly Clear" = "Mainly Clear";
+"Fog" = "Fog";
+"Drizzle" = "Drizzle";
+"Rain" = "Rain";
+"Snow" = "Snow";
+"Rain Showers" = "Rain Showers";
+"Thunderstorm" = "Thunderstorm";
+"Unknown" = "Unknown";

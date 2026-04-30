@@ -12,9 +12,9 @@ enum ImportError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .noValidRides:
-            return "No valid GPX rides found in the file."
+            return String(localized: "No valid GPX rides found in the file.")
         case .unreadableFile:
-            return "The file could not be read."
+            return String(localized: "The file could not be read.")
         case .zipNotSupported:
             return "ZIP import requires the ZipFoundation package. In Xcode: File > Add Package Dependencies > https://github.com/weichsel/ZipFoundation.git"
         }

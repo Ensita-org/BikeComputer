@@ -35,10 +35,10 @@ struct ContentView: View {
 
     private var periodOdometerLabel: String {
         switch selectedPeriod {
-        case .total: return "All Time Odometer"
-        case .today: return "Today's Odometer"
-        case .week: return "This Week's Odometer"
-        case .month: return "This Month's Odometer"
+        case .total: return String(localized: "All Time Odometer")
+        case .today: return String(localized: "Today's Odometer")
+        case .week: return String(localized: "This Week's Odometer")
+        case .month: return String(localized: "This Month's Odometer")
         }
     }
 
@@ -105,7 +105,7 @@ struct ContentView: View {
 
                 Picker("Period", selection: $selectedPeriod) {
                     ForEach(Period.allCases) { period in
-                        Text(period.rawValue).tag(period)
+                        Text(LocalizedStringKey(period.rawValue)).tag(period)
                     }
                 }
                 .pickerStyle(.segmented)
@@ -148,7 +148,7 @@ struct ContentView: View {
 }
 
 private struct TotalBox: View {
-    let title: String
+    let title: LocalizedStringKey
     let value: String
 
     var body: some View {

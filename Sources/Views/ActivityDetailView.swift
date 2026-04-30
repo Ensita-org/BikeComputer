@@ -136,7 +136,7 @@ struct ActivityDetailView: View {
 }
 
 struct DetailRow: View {
-    let title: String
+    let title: LocalizedStringKey
     let value: String
 
     var body: some View {

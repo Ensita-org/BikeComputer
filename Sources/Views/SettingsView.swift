@@ -18,9 +18,9 @@ struct SettingsView: View {
                         Text("Imperial").tag(false)
                     }
                     .pickerStyle(.segmented)
-                    Text(useMetricUnits
+                    Text(LocalizedStringKey(useMetricUnits
                         ? "Speed in km/h, distance in km, temperature in °C"
-                        : "Speed in mph, distance in miles, temperature in °F")
+                        : "Speed in mph, distance in miles, temperature in °F"))
                         .font(.footnote)
                         .foregroundColor(.secondary)
                 }
@@ -29,18 +29,18 @@ struct SettingsView: View {
                     Toggle(isOn: $showWeather) {
                         Text("Show Weather Widget")
                     }
-                    Text(showWeather
+                    Text(LocalizedStringKey(showWeather
                         ? "Current weather is fetched from Open-Meteo using your location."
-                        : "No weather requests are sent. The widget is hidden on the dashboard.")
+                        : "No weather requests are sent. The widget is hidden on the dashboard."))
                         .font(.footnote)
                         .foregroundColor(.secondary)
 
                     Toggle(isOn: $showMap) {
                         Text("Show Map on Ride Details")
                     }
-                    Text(showMap
+                    Text(LocalizedStringKey(showMap
                         ? "Route is drawn over Apple Maps. Opening a ride sends a tile request to Apple."
-                        : "Route is drawn on a plain background. No map tiles are fetched from Apple.")
+                        : "Route is drawn on a plain background. No map tiles are fetched from Apple."))
                         .font(.footnote)
                         .foregroundColor(.secondary)
                 }

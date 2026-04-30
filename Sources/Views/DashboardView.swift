@@ -33,8 +33,8 @@ struct DashboardView: View {
                     Image(systemName: "location.slash")
                         .font(.caption)
                     Text(activityManager.gpsAccuracy < 0
-                         ? "Acquiring GPS…"
-                         : String(format: "GPS ±%.0f m", activityManager.gpsAccuracy))
+                         ? String(localized: "Acquiring GPS…")
+                         : String(format: String(localized: "GPS ±%.0f m"), activityManager.gpsAccuracy))
                         .font(.caption)
                         .fontWeight(.medium)
                 }
@@ -239,7 +239,7 @@ struct DashboardView: View {
 }
 
 struct StatBox: View {
-    let title: String
+    let title: LocalizedStringKey
     let value: String
 
     var body: some View {

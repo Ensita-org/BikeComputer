@@ -43,15 +43,15 @@ class WeatherManager: ObservableObject {
     
     private func mapWmoCode(_ code: Int) -> String {
         switch code {
-        case 0: return "Clear Sky"
-        case 1, 2, 3: return "Mainly Clear"
-        case 45, 48: return "Fog"
-        case 51...55: return "Drizzle"
-        case 61...67: return "Rain"
-        case 71...77: return "Snow"
-        case 80...82: return "Rain Showers"
-        case 95...99: return "Thunderstorm"
-        default: return "Unknown"
+        case 0: return String(localized: "Clear Sky")
+        case 1, 2, 3: return String(localized: "Mainly Clear")
+        case 45, 48: return String(localized: "Fog")
+        case 51...55: return String(localized: "Drizzle")
+        case 61...67: return String(localized: "Rain")
+        case 71...77: return String(localized: "Snow")
+        case 80...82: return String(localized: "Rain Showers")
+        case 95...99: return String(localized: "Thunderstorm")
+        default: return String(localized: "Unknown")
         }
     }
     
