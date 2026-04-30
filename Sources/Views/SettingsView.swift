@@ -7,6 +7,7 @@ struct SettingsView: View {
     @AppStorage("preventScreenLock") private var preventScreenLock: Bool = true
     @AppStorage("showWeather") private var showWeather: Bool = true
     @AppStorage("showMap") private var showMap: Bool = true
+    @EnvironmentObject private var languageManager: LanguageManager
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -43,6 +44,17 @@ struct SettingsView: View {
                         : "Route is drawn on a plain background. No map tiles are fetched from Apple."))
                         .font(.footnote)
                         .foregroundColor(.secondary)
+                }
+
+                Section(header: Text("Language")) {
+                    Picker("Language", selection: Binding(
+                        get: { languageManager.currentCode },
+                        set: { languageManager.select($0) }
+                    )) {
+                        ForEach(LanguageManager.supported) { language in
+                            Text(language.displayName).tag(language.id)
+                        }
+                    }
                 }
 
                 Section(header: Text("Appearance")) {

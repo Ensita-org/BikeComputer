@@ -53,6 +53,10 @@
 "Menu" = "Menu";
 "Time" = "Time";
 
+/* Language */
+"Language" = "Language";
+"System Default" = "System Default";
+
 /* Settings */
 "Units" = "Units";
 "Privacy" = "Privacy";

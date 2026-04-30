@@ -17,6 +17,7 @@ struct BikeComputerApp: App {
     }()
 
     @AppStorage("displayMode") private var displayMode: Int = 0
+    @StateObject private var languageManager = LanguageManager()
 
     private var selectedColorScheme: ColorScheme? {
         switch displayMode {
@@ -25,10 +26,12 @@ struct BikeComputerApp: App {
         default: return nil
         }
     }
-    
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .id(languageManager.currentCode)
+                .environmentObject(languageManager)
                 .preferredColorScheme(selectedColorScheme)
         }
         .modelContainer(sharedModelContainer)
