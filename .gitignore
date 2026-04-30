@@ -84,3 +84,6 @@ Instructions.md
 .env
 .env.*
 AuthKey_*.p8
+
+# claude
+CLAUDE.md
