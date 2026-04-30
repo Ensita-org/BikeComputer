@@ -33,9 +33,12 @@ final class LanguageManager: ObservableObject {
     }
 
     private static func activate(_ code: String) {
-        guard code != "system",
-              let path = Bundle.main.path(forResource: code, ofType: "lproj"),
-              let bundle = Bundle(path: path) else {
+        guard code != "system" else {
+            LanguageBundleOverride.override = nil
+            return
+        }
+        let path = Bundle.main.bundlePath + "/\(code).lproj"
+        guard let bundle = Bundle(path: path) else {
             LanguageBundleOverride.override = nil
             return
         }
